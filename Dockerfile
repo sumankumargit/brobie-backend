@@ -1,15 +1,18 @@
 FROM php:8.2-apache
 
-# Enable Apache rewrite module
+# Enable rewrite
 RUN a2enmod rewrite
 
-# Copy project files to container
+# Copy project files
 COPY . /var/www/html/
 
-# Expose port 3000
-EXPOSE 3000
+# Allow .htaccess rules
+RUN sed -i 's/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
-# Change default Apache port to Railway port
-RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf
+# Correctly configure Apache to use Railway dynamic port env
+RUN echo "Listen ${PORT}" > /etc/apache2/ports.conf
+
+# Expose (Railway ignores this but fine)
+EXPOSE 80
 
 CMD ["apache2-foreground"]
